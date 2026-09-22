@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import {createPortal} from "react-dom";
 import { supabase, configurationError } from './src/supabase';
 import { productionApi, loadMasters, loadFactoryAccess, type ProductionRow, type PlanPage, type Dashboard } from './src/production-api';
-import { canAdmin, canManage, resolveMasterCode, positiveQuantity, periodRange, planProgress, reconcileQueue, excelText, validateFilters, type ProductionFilters } from './src/domain';
+import { canAdmin, canManage, getRoleMenuAccess, resolveRoleNavigation, resolveMasterCode, positiveQuantity, periodRange, planProgress, reconcileQueue, excelText, validateFilters, type ProductionFilters } from './src/domain';
 import './src/styles.css';
 import { AppShell } from './src/ui/AppShell';
 import { ResponsiveTable } from './src/ui/ResponsiveTable';
@@ -4159,6 +4159,7 @@ function UsersAndSecurityPage({session,profile,masters=[]}:any) {
     <FullSuiteModal open={Boolean(editing)} title={bi('Ubah Role dan Factory','修改角色与工厂')} onClose={()=>{if(!busy)setEditing(null);}}>
       {editing&&<form onSubmit={save} className="space-y-4"><p className="font-black text-slate-900">{editing.full_name} · {editing.email}</p>
         <FullSuiteInput label="Role"><select required aria-label="Role pengguna" className={INPUT_CLASS} value={editing.role} onChange={e=>setEditing({...editing,role:e.target.value})}>{!['admin','supervisor','operator'].includes(editing.role)&&<option disabled value={editing.role}>{editing.role}</option>}{['operator','supervisor','admin'].map(role=><option key={role} value={role}>{roleLabel(role)}</option>)}</select></FullSuiteInput>
+        {editing.role==='operator'&&<div className="rounded-xl border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-black text-slate-900">{bi('Akses Menu: Input Produksi saja','菜单访问：仅生产录入')}</p><p className="mt-1 text-xs text-slate-600">{bi('Data Produksi, ekspor, dan menu lainnya tidak tersedia. Factory dan status akun tetap mengikuti pengaturan di bawah.','不可访问生产数据、导出及其他菜单。工厂和账户状态仍以下方设置为准。')}</p></div>}
         <label className="flex gap-2 text-xs font-bold"><input type="checkbox" checked={editing.is_active} onChange={e=>setEditing({...editing,is_active:e.target.checked})}/>{bi('Akun Aktif','账户启用')}</label>
         {editing.role!=='admin'&&<div className="space-y-2"><p className="text-xs font-black">Factory</p>{factories.map((f:any)=><label key={f.code} className="flex gap-2 text-xs font-bold text-slate-600"><input type="checkbox" disabled={!f.is_active&&!selectedFactories.includes(f.code)} checked={selectedFactories.includes(f.code)} onChange={e=>setSelectedFactories(v=>e.target.checked?[...v,f.code]:v.filter(code=>code!==f.code))}/>{f.name}{f.is_active?'':bi(' (nonaktif)','（停用）')}</label>)}</div>}
         <FullSuiteInput label={bi('Alasan Perubahan','修改原因')}><textarea required maxLength={2000} aria-label="Alasan Perubahan Pengguna" className={INPUT_CLASS} value={reason} onChange={e=>setReason(e.target.value)}/></FullSuiteInput>
@@ -5102,8 +5103,8 @@ function ProductionSystem() {
   const [filterDate, setFilterDate] = usePageState("production.date", "");
   const [filterShift, setFilterShift] = usePageState("production.shift", "Semua");
   const [searchQuery, setSearchQuery] = usePageState("production.search", "");
-  const [displayLimit, setDisplayLimit] = usePageState("production.size", 50);
-  const [currentPage, setCurrentPage] = usePageState("production.page", 0);
+  const [displayLimit, setDisplayLimit] = usePageState<number>("production.size", 50);
+  const [currentPage, setCurrentPage] = usePageState<number>("production.page", 0);
   const [editingId, setEditingId] = useState<any>(null);
   const [tempNote, setTempNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -5130,7 +5131,7 @@ function ProductionSystem() {
   const realtimeTimerRef = React.useRef<number | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
-  const [logsPage, setLogsPage] = usePageState("logs.page", 0);
+  const [logsPage, setLogsPage] = usePageState<number>("logs.page", 0);
   const [logsLimit] = useState(30);
   const activeTabRef = React.useRef(activeTab);
   const logsPageRef = React.useRef(logsPage);
@@ -5219,9 +5220,6 @@ function ProductionSystem() {
   };
   const t = text[language as keyof typeof text];
   useEffect(() => {
-    activeTabRef.current = activeTab;
-  }, [activeTab]);
-  useEffect(() => {
     logsPageRef.current = logsPage;
   }, [logsPage]);
   setActiveLanguage(language);
@@ -5229,21 +5227,39 @@ function ProductionSystem() {
   const role = profile?.role || 'viewer';
   const manager = canManage(profile);
   const admin = canAdmin(profile);
+  // Resolve permissions from the validated profile, never from cached page names.
+  const verifiedIdentity = pageCache.getIdentity();
+  const accessProfile = cacheScope && profile?.id === session?.user?.id
+    && verifiedIdentity?.userId === profile?.id && verifiedIdentity?.role === profile?.role
+    ? profile : null;
+  const access = getRoleMenuAccess(accessProfile);
+  const accessRef = React.useRef(access);
+  accessRef.current = access;
+  const {page: visibleTab, mode: visibleProductionMode} = resolveRoleNavigation(accessProfile, activeTab, productionMode);
   useEffect(() => {
-    if (profile && !manager && !['production','security'].includes(activeTab)) setActiveTab('production');
-    if (profile && !admin && ['users','settings'].includes(activeTab)) setActiveTab('production');
-  }, [profile?.role, profile?.is_active, activeTab]);
+    activeTabRef.current = visibleTab;
+  }, [visibleTab]);
+  useEffect(() => {
+    if (!access.canInputProduction) return;
+    if (activeTab !== visibleTab) setActiveTab(visibleTab);
+    if (productionMode !== visibleProductionMode) setProductionMode(visibleProductionMode);
+  }, [cacheScope, access.canInputProduction, activeTab, productionMode, visibleTab, visibleProductionMode]);
+  const navigateByRole = (key: string, sub?: string) => {
+    if (!access.canInputProduction) return;
+    const target = resolveRoleNavigation(accessProfile, key, sub ?? visibleProductionMode);
+    setActiveTab(target.page);
+    setProductionMode(target.mode);
+    setCacheNotice('');
+  };
   const effectiveFilters: ProductionFilters = {
     ...(filterDate ? {start_date:filterDate,end_date:filterDate}:{}),
     factory_code:filterFactory,product:filterProduct,color:filterColor,
     shift:filterShift==='Semua'?'':filterShift,
-    status:productionMode==='verification'?'PENDING':filterStatus,
+    status:visibleProductionMode==='verification'?'PENDING':filterStatus,
     search:searchQuery,
   };
-  const canWriteProduction = ["admin", "supervisor", "operator"].includes(role);
-  const canDeleteProduction = ["admin", "supervisor", "operator"].includes(
-    role,
-  );
+  const canWriteProduction = access.canInputProduction;
+  const canDeleteProduction = access.canReadProduction;
   const canEditNote = manager;
   const setting = (key: string, fallback: any) =>
     Object.prototype.hasOwnProperty.call(appSettings, key)
@@ -5481,12 +5497,12 @@ function ProductionSystem() {
   useEffect(()=>{void loadSupportingData();},[session?.user?.id,profile?.role,profile?.is_active,cacheScope]);
   const persistRecords=(next:any[])=>setRecords(next);
   const fetchData=async()=>{
-    if(!cacheScope||!session?.user?.id||!profile?.is_active)return;
+    if(!cacheScope||!session?.user?.id||!profile?.is_active||!accessRef.current.canReadProduction)return;
     const request=++dataRequestRef.current;const userId=session.user.id,requestScope=cacheScope;
     setLoading(true);setDataError('');
     try{
       const data=await productionApi.page(effectiveFilters,currentPage,displayLimit);
-      if(request!==dataRequestRef.current||activeUserRef.current!==userId||requestScope!==pageCache.getScope())return;
+      if(request!==dataRequestRef.current||activeUserRef.current!==userId||requestScope!==pageCache.getScope()||!accessRef.current.canReadProduction)return;
       setRecords(data.rows);setDataCount(data.count);setTableTotal(data.total_qty);
     }catch(error){if(request===dataRequestRef.current&&requestScope===pageCache.getScope()){setDataError(errorText(error));setRecords([]);setDataCount(0);setTableTotal(0);}}
     finally{if(request===dataRequestRef.current&&requestScope===pageCache.getScope())setLoading(false);}
@@ -5495,7 +5511,7 @@ function ProductionSystem() {
   useEffect(()=>{const signature=JSON.stringify([filterDate,filterShift,filterFactory,filterProduct,filterColor,filterStatus,searchQuery,productionMode]);if(previousFilters.current.scope===cacheScope&&previousFilters.current.signature!==signature)setCurrentPage(0);previousFilters.current={scope:cacheScope,signature};},[cacheScope,filterDate,filterShift,filterFactory,filterProduct,filterColor,filterStatus,searchQuery,productionMode]);
 
   const fetchLogs = async (resetSnapshot = false, pageOverride = logsPage) => {
-    if(!cacheScope||!session?.user?.id||!profile?.is_active)return;
+    if(!cacheScope||!session?.user?.id||!profile?.is_active||!accessRef.current.canReadLogs)return;
     const request=++logsRequestRef.current,requestScope=cacheScope;
     setLogsLoading(true);
     setLogsError('');
@@ -5555,8 +5571,8 @@ function ProductionSystem() {
   useEffect(()=>{if(previousLogSearch.current.scope===cacheScope&&previousLogSearch.current.search!==logSearch){setLogsPage(0);setLogsSnapshotId(null);}previousLogSearch.current={scope:cacheScope,search:logSearch};},[cacheScope,logSearch]);
   useEffect(() => {
     if (!cacheScope || !session || !profile?.is_active) return;
-    if (activeTab === "production") void fetchData();
-    if (activeTab === "logs") fetchLogs(false);
+    if (visibleTab === "production" && access.canReadProduction) void fetchData();
+    if (visibleTab === "logs" && access.canReadLogs) void fetchLogs(false);
   }, [
     activeTab,
     currentPage,
@@ -5566,11 +5582,12 @@ function ProductionSystem() {
     displayLimit,
     productionRefresh,
     logSearch, profile?.is_active, profile?.role, cacheScope,
+    visibleTab, access.canReadProduction, access.canReadLogs,
     filterShift, filterFactory, filterProduct, filterColor, filterStatus, searchQuery, productionMode, JSON.stringify(factoryCodes),
   ]);
   useEffect(() => {
-    if (!session?.user?.id) return;
-    const productionChannel = supabase
+    if (!cacheScope || !session?.user?.id || !access.canInputProduction) return;
+    const productionChannel = access.canReadProduction ? supabase
       .channel(`realtime-production-${session.user.id}`)
       .on(
         "postgres_changes",
@@ -5604,11 +5621,10 @@ function ProductionSystem() {
           }
         },
       )
-      .subscribe();
+      .subscribe() : null;
     const supportChannel = supabase
       .channel(`realtime-support-${session.user.id}`)
       .on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${session.user.id}`},()=>{clearPageCache(false);void loadProfile(session);})
-      .on('postgres_changes',{event:'*',schema:'public',table:'production_targets'},()=>{invalidatePageCache();setProductionRefresh(value=>value+1);})
       .on(
         "postgres_changes",
         {
@@ -5645,15 +5661,18 @@ function ProductionSystem() {
         },
         () => {invalidatePageCache();void loadSupportingData();},
       )
-      .on('postgres_changes',{event:'*',schema:'public',table:'buymore_user_factories',filter:`user_id=eq.${session.user.id}`},()=>{clearPageCache(false);void loadProfile(session);})
-      .subscribe();
+      .on('postgres_changes',{event:'*',schema:'public',table:'buymore_user_factories',filter:`user_id=eq.${session.user.id}`},()=>{clearPageCache(false);void loadProfile(session);});
+    if (access.canReadProduction) {
+      supportChannel.on('postgres_changes',{event:'*',schema:'public',table:'production_targets'},()=>{invalidatePageCache();setProductionRefresh(value=>value+1);});
+    }
+    supportChannel.subscribe();
     return () => {
       if (realtimeTimerRef.current)
         window.clearTimeout(realtimeTimerRef.current);
-      supabase.removeChannel(productionChannel);
+      if (productionChannel) supabase.removeChannel(productionChannel);
       supabase.removeChannel(supportChannel);
     };
-  }, [session?.user?.id, profile?.role, profile?.is_active]);
+  }, [session?.user?.id, profile?.role, profile?.is_active, cacheScope]);
   const saveQueue = (next:any[]) => {
     if(queueKey)localStorage.setItem(queueKey,JSON.stringify(next));
     queueItemsRef.current=next;setOfflineQueue(next);
@@ -5814,10 +5833,10 @@ function ProductionSystem() {
     setAdvanced(DEFAULT_ADVANCED_FIELDS);
     if (draftKey) localStorage.removeItem(draftKey);
   };
-  const handleUpdateNote=async(record:any)=>{setCorrectionRecord(record);setEditingId(null);};
-  const handleDelete=async(record:any)=>{setCorrectionRecord(record);};
+  const handleUpdateNote=async(record:any)=>{if(!accessRef.current.canReadProduction)return;setCorrectionRecord(record);setEditingId(null);};
+  const handleDelete=async(record:any)=>{if(!accessRef.current.canReadProduction)return;setCorrectionRecord(record);};
   const commitReview=async(event:React.FormEvent)=>{
-    event.preventDefault();if(!reviewRecord||reviewBusy)return;setReviewBusy(true);setDataError('');setWorkflowMessage('');
+    event.preventDefault();if(!reviewRecord||reviewBusy||!accessRef.current.canReadProduction)return;setReviewBusy(true);setDataError('');setWorkflowMessage('');
     try{await productionApi.review(reviewRecord,reviewDecision,reviewReason);setReviewRecord(null);setProductionRefresh(n=>n+1);setWorkflowMessage(bi('Status produksi berhasil diperbarui.','生产状态已更新。'));}
     catch(error){setDataError(errorText(error));}finally{setReviewBusy(false);}
   };
@@ -5947,15 +5966,16 @@ function ProductionSystem() {
       source: "BARCODE",
     }));
   };
-  const getFilteredRecords=()=>records;
+  const getFilteredRecords=()=>accessRef.current.canReadProduction?records:[];
   const handleExport=async()=>{
-    if(exportBusy)return;const exportingUser=session.user.id;setExportBusy(true);setDataError('');setExportProgress('');
+    if(exportBusy||!accessRef.current.canReadProduction||!cacheScope||cacheScope!==pageCache.getScope())return;
+    const exportingScope=cacheScope;const exportingUser=session.user.id;setExportBusy(true);setDataError('');setExportProgress('');
     try{
       const rows=await productionApi.exportRows(effectiveFilters,(loaded,total)=>setExportProgress(`${formatNumber(loaded)} / ${formatNumber(total)}`));
-      if(activeUserRef.current!==exportingUser)throw new Error('Sesi berubah. Export dibatalkan.');
+      if(activeUserRef.current!==exportingUser||exportingScope!==pageCache.getScope()||!accessRef.current.canReadProduction)throw new Error('Sesi atau hak akses berubah. Export dibatalkan.');
       if(!rows.length)throw new Error(t.noData);
       const XLSX=await import('xlsx');
-      if(activeUserRef.current!==exportingUser)throw new Error('Sesi berubah. Export dibatalkan.');
+      if(activeUserRef.current!==exportingUser||exportingScope!==pageCache.getScope()||!accessRef.current.canReadProduction)throw new Error('Sesi atau hak akses berubah. Export dibatalkan.');
       const values:Record<string,unknown>[]=rows.map(row=>({
         [t.date]:excelText(row.date),[t.time]:excelText(row.time),[t.shift]:excelText(shiftLabel(row.shift)),
         Factory:excelText(row.factory_code),[t.product]:excelText(row.product),[t.color]:excelText(row.color),
@@ -6035,7 +6055,7 @@ function ProductionSystem() {
     );
   if (session && (!profile || profile.id!==session.user.id || !profile.is_active || !['admin','supervisor','operator'].includes(profile.role)))
     return <div className="min-h-screen flex items-center justify-center bg-[#E3E1E1] p-4"><Card className="max-w-xl p-7 border-l-8 border-l-blue-600"><h1 className="text-xl font-black text-slate-900">{bi('Akses Akun','账户访问')}</h1><div className="my-5"><WorkflowMessage error={profileError||bi('Profil atau role belum siap. Hubungi Admin.','资料或角色尚未就绪，请联系管理员。')}/></div><div className="flex gap-2"><Button onClick={()=>void loadProfile(session)}>{bi('Periksa Lagi','重新检查')}</Button><button onClick={handleLogout} className={SMALL_BUTTON}>{bi('Keluar','退出')}</button></div></Card></div>;
-  if(session&&profile?.is_active&&!cacheScope)return <div className="min-h-screen flex items-center justify-center p-4"><Card className="p-6"><WorkflowMessage loading/><Button onClick={()=>void loadProfile(session)}>{bi('Periksa Akses','验证权限')}</Button></Card></div>;
+  if(session&&profile?.is_active&&(!cacheScope||!access.canInputProduction))return <div className="min-h-screen flex items-center justify-center p-4"><Card className="p-6"><WorkflowMessage loading/><Button onClick={()=>void loadProfile(session)}>{bi('Periksa Akses','验证权限')}</Button></Card></div>;
   if (!session)
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[#E3E1E1] relative overflow-hidden p-4">
@@ -6112,9 +6132,11 @@ function ProductionSystem() {
   return (
     <AppErrorBoundary>
       <AppShell key={cacheScope} brand={t.title} userName={currentUserName(session,profile)} roleLabel={roleLabel(role)} language={language}
-        active={activeTab} subActive={productionMode} onLanguage={setLanguage} onLogout={handleLogout}
-        onNavigate={(key,sub)=>{setActiveTab(key);if(sub)setProductionMode(sub);setCacheNotice('');}}
-        items={[
+        active={visibleTab} subActive={visibleProductionMode} onLanguage={setLanguage} onLogout={handleLogout}
+        onNavigate={navigateByRole}
+        items={access.inputOnly
+          ? [{id:'production',label:bi('Input Produksi','生产录入')}]
+          : [
           ...(manager?[{id:'dashboard',label:'Dashboard'}]:[]),
           {id:'production',label:bi('Produksi','生产'),children:[{id:'input',label:bi('Input Produksi','生产录入')},{id:'data',label:bi('Data Produksi','生产数据')},...(manager?[{id:'verification',label:bi('Verifikasi','审核')},{id:'correction',label:bi('Koreksi','更正')}]:[])]},
           ...(manager?[{id:'plan',label:'Production Plan'},{id:'analytics',label:bi('Analisis','数据分析')},{id:'factory',label:'Factory'}]:[]),
@@ -6125,10 +6147,10 @@ function ProductionSystem() {
         ]}>
         {cacheNotice&&<p role="status" className="buymore-notice">{cacheNotice} <button type="button" className="underline" onClick={()=>{invalidatePageCache();setCacheNotice('');setProductionRefresh(n=>n+1);}}>{bi('Perbarui','刷新')}</button></p>}
         {offlineQueue.length>0&&<details className="buymore-notice"><summary>{offlineQueue.length} {bi('entri belum tersimpan di Supabase','条记录尚未保存至 Supabase')}</summary><div className="mt-3 space-y-2">{offlineQueue.map(item=><p key={item.id} className="break-words">{item.payload?.product||item.id}: {item.last_error||bi('Menunggu koneksi','等待连接')}</p>)}<button type="button" disabled={!online} className={SMALL_BUTTON} onClick={flushOfflineQueue}>{bi('Kirim Antrean','提交队列')}</button></div></details>}
-          {activeTab === "production" && (
+          {visibleTab === "production" && (
             <div className="space-y-6 md:space-y-8">
               <WorkflowMessage error={dataError} message={workflowMessage} />
-              {productionMode==='input' && <Card className="p-5 md:p-8 border-l-8 border-l-blue-600">
+              {visibleProductionMode==='input' && access.canInputProduction && <Card className="p-5 md:p-8 border-l-8 border-l-blue-600">
                 <FullSuiteSectionTitle
                   title={t.add}
                   subtitle={bi(
@@ -6469,7 +6491,7 @@ function ProductionSystem() {
                 )}
               </Card>}
 
-              <Card>
+              {access.canReadProduction && <Card>
                 <div className="px-5 md:px-8 py-5 border-b border-slate-100 bg-slate-50/40">
                   <FullSuiteSectionTitle
                     title={t.result}
@@ -6795,7 +6817,7 @@ function ProductionSystem() {
                   <div className="flex items-center gap-2">
                     <button
                       disabled={currentPage === 0 || loading}
-                      onClick={() => setCurrentPage((value) => value - 1)}
+                      onClick={() => setCurrentPage((value: number) => value - 1)}
                       className={SMALL_BUTTON}
                     >{bi('Sebelumnya','上一页')}</button>
                     <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-black">
@@ -6805,7 +6827,7 @@ function ProductionSystem() {
                       disabled={
                         (currentPage+1)*displayLimit>=dataCount || loading
                       }
-                      onClick={() => setCurrentPage((value) => value + 1)}
+                      onClick={() => setCurrentPage((value: number) => value + 1)}
                       className={SMALL_BUTTON}
                     >{bi('Berikutnya','下一页')}</button>
                   </div>
@@ -6836,19 +6858,19 @@ function ProductionSystem() {
                     </select>
                   </div>
                 </div>
-              </Card>
+              </Card>}
             </div>
           )}
 
-          {activeTab === 'dashboard' && manager && <AnalyticsPage mode="dashboard" session={session} language={language} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh}/>}
-          {activeTab === 'analytics' && manager && <AnalyticsPage session={session} language={language} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh}/>}
-          {activeTab === 'plan' && manager && <ProductionTargetsPage session={session} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh}/>}
-          {activeTab === 'factory' && manager && <FactoryPage session={session} language={language} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh} onChanged={loadSupportingData}/>}
-          {activeTab === 'settings' && admin && <MasterDataPage session={session} profile={profile} onChanged={loadSupportingData}/>}
-          {activeTab === 'users' && admin && <UsersAndSecurityPage session={session} profile={profile} masters={masterItems}/>}
-          {activeTab === 'security' && <MfaManagement session={session}/>}
+          {visibleTab === 'dashboard' && manager && <AnalyticsPage mode="dashboard" session={session} language={language} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh}/>}
+          {visibleTab === 'analytics' && manager && <AnalyticsPage session={session} language={language} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh}/>}
+          {visibleTab === 'plan' && manager && <ProductionTargetsPage session={session} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh}/>}
+          {visibleTab === 'factory' && manager && <FactoryPage session={session} language={language} profile={profile} masters={masterItems} factoryCodes={factoryCodes} dataVersion={productionRefresh} onChanged={loadSupportingData}/>}
+          {visibleTab === 'settings' && admin && <MasterDataPage session={session} profile={profile} onChanged={loadSupportingData}/>}
+          {visibleTab === 'users' && admin && <UsersAndSecurityPage session={session} profile={profile} masters={masterItems}/>}
+          {visibleTab === 'security' && access.canViewSecurity && <MfaManagement session={session}/>}
 
-          {activeTab === "logs" && manager && (
+          {visibleTab === "logs" && manager && (
             <Card>
               <div className="px-5 pt-5"><WorkflowMessage error={logsError} loading={logsLoading}/></div>
               <div className="px-5 md:px-8 py-5 border-b border-slate-100 bg-slate-50/40">
@@ -6999,7 +7021,7 @@ function ProductionSystem() {
                 <div className="flex gap-2">
                   <button
                     disabled={logsPage === 0 || logsLoading}
-                    onClick={() => setLogsPage((value) => value - 1)}
+                    onClick={() => setLogsPage((value: number) => value - 1)}
                     className={SMALL_BUTTON}
                   >{bi('Sebelumnya','上一页')}</button>
                   <span className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-black">
@@ -7007,7 +7029,7 @@ function ProductionSystem() {
                   </span>
                   <button
                     disabled={logs.length < logsLimit || logsLoading}
-                    onClick={() => setLogsPage((value) => value + 1)}
+                    onClick={() => setLogsPage((value: number) => value + 1)}
                     className={SMALL_BUTTON}
                   >{bi('Berikutnya','下一页')}</button>
                 </div>
@@ -7018,8 +7040,8 @@ function ProductionSystem() {
             </Card>
           )}
 
-        <ProductionCorrectionModal record={correctionRecord} onClose={()=>setCorrectionRecord(null)} onSaved={()=>{setProductionRefresh(n=>n+1);setWorkflowMessage(bi('Koreksi tersimpan dan menunggu verifikasi ulang.','更正已保存，等待重新审核。'));}} masters={masterItems} profile={profile} factoryCodes={factoryCodes}/>
-        <FullSuiteModal open={Boolean(reviewRecord)} title={reviewDecision==='VERIFIED'?bi('Verifikasi Produksi','审核生产'):bi('Tolak Produksi','拒绝生产')} onClose={()=>{if(!reviewBusy)setReviewRecord(null);}}>
+        {access.canReadProduction && <ProductionCorrectionModal record={correctionRecord} onClose={()=>setCorrectionRecord(null)} onSaved={()=>{setProductionRefresh(n=>n+1);setWorkflowMessage(bi('Koreksi tersimpan dan menunggu verifikasi ulang.','更正已保存，等待重新审核。'));}} masters={masterItems} profile={profile} factoryCodes={factoryCodes}/>}
+        <FullSuiteModal open={access.canReadProduction && Boolean(reviewRecord)} title={reviewDecision==='VERIFIED'?bi('Verifikasi Produksi','审核生产'):bi('Tolak Produksi','拒绝生产')} onClose={()=>{if(!reviewBusy)setReviewRecord(null);}}>
           <form onSubmit={commitReview} className="space-y-4"><p className="text-sm font-black text-slate-900">#{reviewRecord?.id} · {reviewRecord?.product} · Qty {formatNumber(reviewRecord?.quantity)}</p><FullSuiteInput label={reviewDecision==='REJECTED'?bi('Alasan Penolakan (wajib)','拒绝原因（必填）'):bi('Catatan Verifikasi (opsional)','审核备注（可选）')}><textarea aria-label="Alasan Verifikasi" className={INPUT_CLASS} required={reviewDecision==='REJECTED'} maxLength={2000} value={reviewReason} onChange={e=>setReviewReason(e.target.value)}/></FullSuiteInput><WorkflowMessage error={dataError}/><Button type="submit" disabled={reviewBusy}>{reviewBusy?bi('Menyimpan…','正在保存…'):bi('Simpan Keputusan','保存决定')}</Button></form>
         </FullSuiteModal>
         <QrBarcodeScanner
@@ -7027,13 +7049,13 @@ function ProductionSystem() {
           onClose={() => setScannerOpen(false)}
           onDetected={applyScannedValue}
         />
-        <RecordDetailModal
+        {access.canReadProduction && <RecordDetailModal
           open={Boolean(detailRecord)}
           record={detailRecord}
           onClose={() => setDetailRecord(null)}
           session={session}
           profile={profile}
-        />
+        />}
       </AppShell>
     </AppErrorBoundary>
   );
