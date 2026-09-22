@@ -1,0 +1,13 @@
+{
+  "basis": "Uploaded main(4).tsx; exact source text of original shared visual declarations",
+  "components": {
+    "Card": "778acefa984e2a0845bd57e6f193a398ee8697a65a494bc98a64b8111360c1cb",
+    "Button": "1e8b7902ff37714960aa323409a3bf7bfc3de8963fd353265d0741e00c3e8708",
+    "FullSuiteBadge": "a671569ec4c0d2881362125a262f1bf2e02e23a60e13cf7d705d1b214493285e",
+    "FullSuiteStat": "984a2de51393792a23b8b38045ba46c8542fe244550c3b317397530131452789",
+    "FullSuiteInput": "213d153532fc22359eb4f71284f6d7625bbcf331f8077bfac3bb49ec61db95ee",
+    "FullSuiteModal": "c3d06b89e35d1f65ef870b4206a0cb7654a14328ae26be0f11c32352b8144690",
+    "INPUT_CLASS": "d4ceaa02647bb543cf2deac07fdb1000487da2f12e4b2451436444439e083e19",
+    "SMALL_BUTTON": "227a532b09851a3f4124819af773a3efa5b5f6cb949c94633686c56f1b3789c9"
+  }
+}

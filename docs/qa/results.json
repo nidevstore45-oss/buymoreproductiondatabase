@@ -1,0 +1,90 @@
+{
+  "created_at": "2026-09-21T08:33:36.710920+00:00",
+  "release_status": "IMPLEMENTATION_CANDIDATE_NOT_PRODUCTION_READY",
+  "definition_of_done_met": false,
+  "runtime": {
+    "node": "22.16.0",
+    "npm": "10.9.2",
+    "typescript_test_compiler": "5.8.3",
+    "compiler_source": "preinstalled TypeScript; project dependencies not installed",
+    "preinstalled_tailwind": "4.1.10; incompatible with retained Tailwind 3 CLI, not substituted"
+  },
+  "tests": {
+    "total": 49,
+    "passed": 49,
+    "failed": 0,
+    "skipped": 0,
+    "kind": "Node business-rule/unit tests and source-contract assertions; transport tests do not use a live database"
+  },
+  "commands": [
+    {
+      "name": "install",
+      "command": "timeout 30s npm install --fetch-retries=0 --fetch-timeout=8000 --no-audit --no-fund",
+      "exit_code": 124,
+      "status": "BLOCKED_TIMEOUT",
+      "log": "docs/qa/install-final.log"
+    },
+    {
+      "name": "tests",
+      "command": "npm test",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "docs/qa/tests-final.log"
+    },
+    {
+      "name": "source",
+      "command": "npm run check:source",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "docs/qa/source-final.log"
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "exit_code": 2,
+      "status": "FAILED",
+      "log": "docs/qa/typecheck-final.log"
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "exit_code": 2,
+      "status": "FAILED",
+      "log": "docs/qa/build-final.log"
+    },
+    {
+      "name": "tailwind",
+      "command": "node <global-node-modules>/tailwindcss/lib/cli.js -i src/styles.css -c tailwind.config.cjs -o <temporary-file> --minify",
+      "exit_code": 1,
+      "status": "FAILED",
+      "log": "docs/qa/tailwind-final.log"
+    }
+  ],
+  "structural_result": {
+    "created_at": "2026-09-21T08:31:03.030Z",
+    "status": "PASS",
+    "checks": [
+      "10 TypeScript/TSX/JavaScript source files parsed; local static imports inspected.",
+      "25 unique workflow routine definitions; 13 referenced names found in SQL. This is NOT PostgreSQL syntax/execution validation.",
+      "8 shared visual component/style declarations match the uploaded original exactly (text hashes, not screenshot comparison)."
+    ],
+    "errors": [],
+    "limitations": [
+      "Dependencies, complete TypeScript semantics, bundler execution, PostgreSQL execution, real Auth/RLS, and rendered visual comparison are separate checks."
+    ]
+  },
+  "not_executed": [
+    "PostgreSQL migration syntax/execution",
+    "SQL catalog and rollback workflow scripts",
+    "Real Supabase Auth, MFA, RLS and Edge Function integration",
+    "Browser functional/E2E tests",
+    "Screenshot-based visual/responsive comparison",
+    "Actual SheetJS browser export/opening XLSX",
+    "Production scale performance benchmarks",
+    "Full ESLint run; no original ESLint configuration",
+    "Independent reviewer/subagent review",
+    "GitHub/Vercel deployment"
+  ],
+  "environment_evidence": "docs/qa/install-baseline.log records EAI_AGAIN registry.npmjs.org. Final installation retry timed out (124). No matching project dependency tree or new lockfile was created.",
+  "production_changes": false
+}

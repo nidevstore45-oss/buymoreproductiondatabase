@@ -1,0 +1,6 @@
+{
+  "test": "PostCSS parser validation only; not a Tailwind 3 generation/build",
+  "pass": true,
+  "rules": 135,
+  "declarations": 367
+}

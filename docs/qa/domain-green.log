@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: domain implementation is present
+ok 1 - domain implementation is present
+  ---
+  duration_ms: 0.52513
+  type: 'test'
+  ...
+# Subtest: progress preserves 110 percent and surplus
+ok 2 - progress preserves 110 percent and surplus
+  ---
+  duration_ms: 1.708138
+  type: 'test'
+  ...
+# Subtest: zero target has no fabricated percentage
+ok 3 - zero target has no fabricated percentage
+  ---
+  duration_ms: 0.131723
+  type: 'test'
+  ...
+# Subtest: quantity must be a positive safe integer, not silently rounded
+ok 4 - quantity must be a positive safe integer, not silently rounded
+  ---
+  duration_ms: 0.659829
+  type: 'test'
+  ...
+# Subtest: Jakarta day boundary is independent of the device timezone
+ok 5 - Jakarta day boundary is independent of the device timezone
+  ---
+  duration_ms: 17.487851
+  type: 'test'
+  ...
+# Subtest: 7 and 30 days are inclusive rolling ranges, not calendar weeks
+ok 6 - 7 and 30 days are inclusive rolling ranges, not calendar weeks
+  ---
+  duration_ms: 0.583437
+  type: 'test'
+  ...
+# Subtest: invalid calendar dates and reversed ranges fail
+ok 7 - invalid calendar dates and reversed ranges fail
+  ---
+  duration_ms: 0.530739
+  type: 'test'
+  ...
+# Subtest: exact plan keys isolate factory, shift and color
+ok 8 - exact plan keys isolate factory, shift and color
+  ---
+  duration_ms: 0.330245
+  type: 'test'
+  ...
+# Subtest: only acknowledged queue items are removed, concurrent additions survive
+ok 9 - only acknowledged queue items are removed, concurrent additions survive
+  ---
+  duration_ms: 0.461257
+  type: 'test'
+  ...
+# Subtest: an unknown or inactive role gets no elevated UI permission
+ok 10 - an unknown or inactive role gets no elevated UI permission
+  ---
+  duration_ms: 0.246351
+  type: 'test'
+  ...
+# Subtest: export text does not become an Excel formula
+ok 11 - export text does not become an Excel formula
+  ---
+  duration_ms: 0.166494
+  type: 'test'
+  ...
+# Subtest: filter search remains a literal string and limit is bounded
+ok 12 - filter search remains a literal string and limit is bounded
+  ---
+  duration_ms: 0.209567
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 82.505282

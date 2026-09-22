@@ -1,0 +1,188 @@
+{
+  "files": [
+    {
+      "uploaded_name": ".gitignore(1)",
+      "path": ".gitignore",
+      "bytes": 2165,
+      "sha256": "ae3ac05cd16b0f6c4251fd30d74c12866d1ba6daa365aacc2e32ddfc09a478f6"
+    },
+    {
+      "uploaded_name": "index(1).html",
+      "path": "index.html",
+      "bytes": 621,
+      "sha256": "040f1ebcfd56c0cb09cc8d9b4e9ea501c9589d1a100f96afcc99896cf953a523"
+    },
+    {
+      "uploaded_name": "main(4).tsx",
+      "path": "main.tsx",
+      "bytes": 356215,
+      "sha256": "11939235ac4813bb556de624865a7db47a64ed6563550bca0958153a2f9ea0ec"
+    },
+    {
+      "uploaded_name": "LICENSE(1)",
+      "path": "LICENSE",
+      "bytes": 1073,
+      "sha256": "3b9c25e75ccf0f09c7b66d30b7be7e1cf0ef1c6d11ca36ec043cd041d090e324"
+    },
+    {
+      "uploaded_name": "README(1).md",
+      "path": "README.md",
+      "bytes": 33,
+      "sha256": "71c656f55f987b46c22f469c8578185de0920d983869a451184a4f347b07107f"
+    },
+    {
+      "uploaded_name": "package(1).json",
+      "path": "package.json",
+      "bytes": 599,
+      "sha256": "26482ab65b803340749113c9d109b91d66a6ab5df4f6d632cd35675f042bf7dd"
+    },
+    {
+      "uploaded_name": "package-lock(1).json",
+      "path": "package-lock.json",
+      "bytes": 95370,
+      "sha256": "4bde168f3080b5797e7d476cd98fe8fcf715b3f7802b0a6dd93580f44a79b554"
+    },
+    {
+      "uploaded_name": "tsconfig(1).json",
+      "path": "tsconfig.json",
+      "bytes": 564,
+      "sha256": "67ec5708b3faa1a5c9928434963398f521749cf4574b89b46f49fda1c0374ac6"
+    },
+    {
+      "uploaded_name": "tsconfig.node(1).json",
+      "path": "tsconfig.node.json",
+      "bytes": 184,
+      "sha256": "c40d0614fda5b8a746a1ba2e3be8e2370140c0167851ac77881cd53bb5647cdd"
+    },
+    {
+      "uploaded_name": "vite.config(1).ts",
+      "path": "vite.config.ts",
+      "bytes": 163,
+      "sha256": "2d8b8a9c0291a6635f5efef200ae0fae8bfd0f5d57b3e456125e71aea661be6a"
+    },
+    {
+      "uploaded_name": "robot.txt",
+      "path": "public/robots.txt",
+      "bytes": 26,
+      "sha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1"
+    },
+    {
+      "uploaded_name": "manifest.webmanifest",
+      "path": "public/manifest.webmanifest",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "uploaded_name": "production-sw.js",
+      "path": "public/production-sw.js",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "uploaded_name": "index.ts",
+      "path": "supabase/functions/legacy-reports/index.ts",
+      "bytes": 14376,
+      "sha256": "29e39b2dc81a00613071561cac71b11e947d1c26d967b190fb174621436be157"
+    }
+  ],
+  "components": [
+    "SUPABASE_URL",
+    "SUPABASE_KEY",
+    "Card",
+    "Button",
+    "ANALYTICS_BATCH_SIZE",
+    "AnalyticsStatCard",
+    "AnalyticsChartCard",
+    "AnalyticsEmptyChart",
+    "AnalyticsVerticalBarChart",
+    "AnalyticsHorizontalBarChart",
+    "AnalyticsLineChart",
+    "AnalyticsDonutChart",
+    "AnalyticsPage",
+    "DEFAULT_ADVANCED_FIELDS",
+    "APP_ROLES",
+    "INPUT_CLASS",
+    "SMALL_BUTTON",
+    "FullSuiteSectionTitle",
+    "FullSuiteBadge",
+    "FullSuiteStat",
+    "FullSuiteInput",
+    "BilingualDataGrid",
+    "FullSuiteModal",
+    "PresenceIndicator",
+    "SavedFiltersControl",
+    "AttachmentManager",
+    "CODE128_PATTERNS",
+    "Code128Barcode",
+    "QrBarcodeScanner",
+    "MfaManagement",
+    "RecordDetailModal",
+    "ProductionTargetsPage",
+    "QualityControlPage",
+    "WorkOrdersPage",
+    "ShiftClosingPage",
+    "ApprovalsAndTrashPage",
+    "MASTER_CATEGORIES",
+    "MasterDataPage",
+    "ScheduledReportsPage",
+    "UsersAndSecurityPage",
+    "AttachmentsLibraryPage",
+    "OperationsOverviewPage",
+    "OperationsSuitePage",
+    "InvitationSignupScreen",
+    "PasswordRecoveryScreen",
+    "MfaChallengeScreen",
+    "ProductionSystem"
+  ],
+  "tables_or_buckets": [
+    "activity_logs",
+    "app_invitations",
+    "app_login_events",
+    "app_settings",
+    "attachments",
+    "change_requests",
+    "master_items",
+    "production-files",
+    "production_batches",
+    "production_data",
+    "production_quality",
+    "production_targets",
+    "profiles",
+    "report_runs",
+    "report_schedules",
+    "saved_filters",
+    "shift_closures",
+    "user_favorites",
+    "v_production_target_progress",
+    "work_orders"
+  ],
+  "rpcs": [
+    "admin_update_profile",
+    "create_user_invitation",
+    "get_public_invitation",
+    "purge_production_record",
+    "request_production_delete",
+    "request_production_note_change",
+    "restore_production_record",
+    "review_change_request",
+    "revoke_user_invitation",
+    "run_report_schedules",
+    "set_shift_closure_status",
+    "submit_shift_closure",
+    "update_my_language"
+  ],
+  "missing_inputs": [
+    "database DDL / migration history",
+    "actual Supabase policies/functions/triggers",
+    "reference screenshots",
+    "authorized Supabase project connection"
+  ],
+  "inventory_kind": "Uploaded baseline inventory; hashes refer to original files, not final edited source",
+  "output_mapping": {
+    "index.ts": "legacy/report-runner.ts",
+    "manifest.webmanifest": "public/manifest.webmanifest",
+    "production-sw.js": "public/production-sw.js",
+    "robot.txt": "public/robots.txt",
+    "package-lock.json": "docs/original-package-lock.json (reference only; a generated active replacement is not available)"
+  }
+}

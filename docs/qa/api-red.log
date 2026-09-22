@@ -1,0 +1,102 @@
+TAP version 13
+# Subtest: API core is independently testable without a fallback database
+not ok 1 - API core is independently testable without a fallback database
+  ---
+  duration_ms: 1.948909
+  type: 'test'
+  location: '/mnt/data/production-buy-more/tests/api.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: 'API core is missing'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/production-buy-more/tests/api.test.mjs:8:82)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: invalid date range is rejected before any request
+ok 2 - invalid date range is rejected before any request # SKIP
+  ---
+  duration_ms: 0.125214
+  type: 'test'
+  ...
+# Subtest: filters and pagination are sent to the server, with literal search intact
+ok 3 - filters and pagination are sent to the server, with literal search intact # SKIP
+  ---
+  duration_ms: 0.077184
+  type: 'test'
+  ...
+# Subtest: server save error never becomes a success acknowledgement
+ok 4 - server save error never becomes a success acknowledgement # SKIP
+  ---
+  duration_ms: 0.062842
+  type: 'test'
+  ...
+# Subtest: missing save acknowledgement is rejected
+ok 5 - missing save acknowledgement is rejected # SKIP
+  ---
+  duration_ms: 0.059667
+  type: 'test'
+  ...
+# Subtest: fractional quantity cannot be silently rounded by the submit adapter
+ok 6 - fractional quantity cannot be silently rounded by the submit adapter # SKIP
+  ---
+  duration_ms: 0.065916
+  type: 'test'
+  ...
+# Subtest: rejection reason is required before transport
+ok 7 - rejection reason is required before transport # SKIP
+  ---
+  duration_ms: 0.060849
+  type: 'test'
+  ...
+# Subtest: correction transmits expected version and does not mutate the source row optimistically
+ok 8 - correction transmits expected version and does not mutate the source row optimistically # SKIP
+  ---
+  duration_ms: 0.098795
+  type: 'test'
+  ...
+# Subtest: full export retrieves all 1,250 filtered rows in bounded pages
+ok 9 - full export retrieves all 1,250 filtered rows in bounded pages # SKIP
+  ---
+  duration_ms: 0.186623
+  type: 'test'
+  ...
+# Subtest: changed snapshot aborts export instead of returning an inconsistent file
+ok 10 - changed snapshot aborts export instead of returning an inconsistent file # SKIP
+  ---
+  duration_ms: 0.316574
+  type: 'test'
+  ...
+# Subtest: oversized export must narrow filters instead of silently truncating
+ok 11 - oversized export must narrow filters instead of silently truncating # SKIP
+  ---
+  duration_ms: 0.130622
+  type: 'test'
+  ...
+# Subtest: duplicate rows abort export
+ok 12 - duplicate rows abort export # SKIP
+  ---
+  duration_ms: 0.066488
+  type: 'test'
+  ...
+# Subtest: empty export is explicit rather than generating a dummy data row
+ok 13 - empty export is explicit rather than generating a dummy data row # SKIP
+  ---
+  duration_ms: 0.04085
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 12
+# todo 0
+# duration_ms 60.582883

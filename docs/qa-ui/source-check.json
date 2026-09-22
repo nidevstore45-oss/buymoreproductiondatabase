@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-21T09:59:56.676Z",
+  "status": "PASS",
+  "checks": [
+    "16 TypeScript/TSX/JavaScript source files parsed; local static imports inspected.",
+    "25 unique workflow routine definitions; 13 referenced names found in SQL. This is NOT PostgreSQL syntax/execution validation.",
+    "Existing shared component names retained; authorized UI revision uses AppShell and ResponsiveTable. Historical text hashes are not a current design requirement."
+  ],
+  "errors": [],
+  "limitations": [
+    "Dependencies, complete TypeScript semantics, bundler execution, PostgreSQL execution, real Auth/RLS, and rendered visual comparison are separate checks."
+  ]
+}

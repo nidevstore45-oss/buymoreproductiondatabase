@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: public configuration validator exists
+not ok 1 - public configuration validator exists
+  ---
+  duration_ms: 0.922184
+  type: 'test'
+  location: '/mnt/data/production-buy-more/tests/config.test.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: 'Config validator is missing'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/production-buy-more/tests/config.test.mjs:7:57)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: missing config is reported without a credential fallback
+ok 2 - missing config is reported without a credential fallback # SKIP
+  ---
+  duration_ms: 0.118324
+  type: 'test'
+  ...
+# Subtest: frontend rejects service-role JWTs
+ok 3 - frontend rejects service-role JWTs # SKIP
+  ---
+  duration_ms: 0.964025
+  type: 'test'
+  ...
+# Subtest: frontend rejects secret keys and credential-bearing URLs
+ok 4 - frontend rejects secret keys and credential-bearing URLs # SKIP
+  ---
+  duration_ms: 0.094949
+  type: 'test'
+  ...
+# Subtest: plain HTTP is permitted only for a local Supabase instance
+ok 5 - plain HTTP is permitted only for a local Supabase instance # SKIP
+  ---
+  duration_ms: 0.067709
+  type: 'test'
+  ...
+# Subtest: public keys are configuration values, not proof of authentication
+ok 6 - public keys are configuration values, not proof of authentication # SKIP
+  ---
+  duration_ms: 0.060248
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 5
+# todo 0
+# duration_ms 54.947266

@@ -1,0 +1,10 @@
+
+> buymore-production@1.1.0 check:source
+> node scripts/check-source.cjs
+
+10 TypeScript/TSX/JavaScript source files parsed; local static imports inspected.
+25 unique workflow routine definitions; 13 referenced names found in SQL. This is NOT PostgreSQL syntax/execution validation.
+8 shared visual component/style declarations match the uploaded original exactly (text hashes, not screenshot comparison).
+Missing release file: README_DEPLOYMENT.md
+Missing release file: CHANGELOG.md
+Structural source checks: FAIL

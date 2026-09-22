@@ -1,0 +1,96 @@
+TAP version 13
+# Subtest: domain implementation is present
+not ok 1 - domain implementation is present
+  ---
+  duration_ms: 2.190059
+  type: 'test'
+  location: '/mnt/data/production-buy-more/tests/domain.test.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing production domain implementation'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/production-buy-more/tests/domain.test.mjs:6:55)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: progress preserves 110 percent and surplus
+ok 2 - progress preserves 110 percent and surplus # SKIP
+  ---
+  duration_ms: 0.123311
+  type: 'test'
+  ...
+# Subtest: zero target has no fabricated percentage
+ok 3 - zero target has no fabricated percentage # SKIP
+  ---
+  duration_ms: 0.078325
+  type: 'test'
+  ...
+# Subtest: quantity must be a positive safe integer, not silently rounded
+ok 4 - quantity must be a positive safe integer, not silently rounded # SKIP
+  ---
+  duration_ms: 0.233032
+  type: 'test'
+  ...
+# Subtest: Jakarta day boundary is independent of the device timezone
+ok 5 - Jakarta day boundary is independent of the device timezone # SKIP
+  ---
+  duration_ms: 0.084954
+  type: 'test'
+  ...
+# Subtest: 7 and 30 days are inclusive rolling ranges, not calendar weeks
+ok 6 - 7 and 30 days are inclusive rolling ranges, not calendar weeks # SKIP
+  ---
+  duration_ms: 0.069722
+  type: 'test'
+  ...
+# Subtest: invalid calendar dates and reversed ranges fail
+ok 7 - invalid calendar dates and reversed ranges fail # SKIP
+  ---
+  duration_ms: 0.054711
+  type: 'test'
+  ...
+# Subtest: exact plan keys isolate factory, shift and color
+ok 8 - exact plan keys isolate factory, shift and color # SKIP
+  ---
+  duration_ms: 0.121177
+  type: 'test'
+  ...
+# Subtest: only acknowledged queue items are removed, concurrent additions survive
+ok 9 - only acknowledged queue items are removed, concurrent additions survive # SKIP
+  ---
+  duration_ms: 0.298808
+  type: 'test'
+  ...
+# Subtest: an unknown or inactive role gets no elevated UI permission
+ok 10 - an unknown or inactive role gets no elevated UI permission # SKIP
+  ---
+  duration_ms: 0.286631
+  type: 'test'
+  ...
+# Subtest: export text does not become an Excel formula
+ok 11 - export text does not become an Excel formula # SKIP
+  ---
+  duration_ms: 0.112556
+  type: 'test'
+  ...
+# Subtest: filter search remains a literal string and limit is bounded
+ok 12 - filter search remains a literal string and limit is bounded # SKIP
+  ---
+  duration_ms: 0.055211
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 11
+# todo 0
+# duration_ms 62.378115

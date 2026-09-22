@@ -1,0 +1,2 @@
+$ npm install --fetch-retries=0 --fetch-timeout=8000 --ignore-scripts --no-audit --no-fund
+EXIT_CODE=124

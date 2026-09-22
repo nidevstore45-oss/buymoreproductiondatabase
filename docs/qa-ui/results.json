@@ -1,0 +1,59 @@
+{
+  "version": "1.2.0",
+  "verified_at": "2026-09-21T10:00:49.875430+00:00",
+  "base": "production-buy-more-final.zip (1.1.0; user confirmed)",
+  "unit_and_source_contracts": {
+    "passed": 78,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "tests-final.log"
+  },
+  "source_parser": {
+    "created_at": "2026-09-21T09:59:56.676Z",
+    "status": "PASS",
+    "checks": [
+      "16 TypeScript/TSX/JavaScript source files parsed; local static imports inspected.",
+      "25 unique workflow routine definitions; 13 referenced names found in SQL. This is NOT PostgreSQL syntax/execution validation.",
+      "Existing shared component names retained; authorized UI revision uses AppShell and ResponsiveTable. Historical text hashes are not a current design requirement."
+    ],
+    "errors": [],
+    "limitations": [
+      "Dependencies, complete TypeScript semantics, bundler execution, PostgreSQL execution, real Auth/RLS, and rendered visual comparison are separate checks."
+    ]
+  },
+  "browser_components": {
+    "passed": 46,
+    "failed": 0,
+    "page_errors": 0,
+    "evidence": "browser-components.json",
+    "scope": "Offline isolated real-component fixture, NOT Vite build/live Supabase"
+  },
+  "css_parser": {
+    "test": "PostCSS parser validation only; not a Tailwind 3 generation/build",
+    "pass": true,
+    "rules": 135,
+    "declarations": 367
+  },
+  "install": {
+    "passed": false,
+    "exit_code": 124,
+    "registry_dns_error": true
+  },
+  "typecheck": {
+    "passed": false,
+    "exit_code": 2
+  },
+  "build": {
+    "passed": false,
+    "exit_code": 2,
+    "vite_bundling_ran": false
+  },
+  "live_supabase_tested": false,
+  "remote_deployed": false,
+  "new_migrations": 0,
+  "production_ready": false,
+  "review": {
+    "mode": "manual diff/source review plus automated checks",
+    "independent_reviewer": false
+  }
+}

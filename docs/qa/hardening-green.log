@@ -1,0 +1,278 @@
+
+> buymore-production@1.1.0 test
+> tsc -p tsconfig.test.json && node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: API core is independently testable without a fallback database
+ok 1 - API core is independently testable without a fallback database
+  ---
+  duration_ms: 0.811682
+  type: 'test'
+  ...
+# Subtest: invalid date range is rejected before any request
+ok 2 - invalid date range is rejected before any request
+  ---
+  duration_ms: 1.004645
+  type: 'test'
+  ...
+# Subtest: filters and pagination are sent to the server, with literal search intact
+ok 3 - filters and pagination are sent to the server, with literal search intact
+  ---
+  duration_ms: 0.267793
+  type: 'test'
+  ...
+# Subtest: server save error never becomes a success acknowledgement
+ok 4 - server save error never becomes a success acknowledgement
+  ---
+  duration_ms: 0.229197
+  type: 'test'
+  ...
+# Subtest: missing save acknowledgement is rejected
+ok 5 - missing save acknowledgement is rejected
+  ---
+  duration_ms: 0.201296
+  type: 'test'
+  ...
+# Subtest: fractional quantity cannot be silently rounded by the submit adapter
+ok 6 - fractional quantity cannot be silently rounded by the submit adapter
+  ---
+  duration_ms: 0.172443
+  type: 'test'
+  ...
+# Subtest: rejection reason is required before transport
+ok 7 - rejection reason is required before transport
+  ---
+  duration_ms: 0.234815
+  type: 'test'
+  ...
+# Subtest: correction transmits expected version and does not mutate the source row optimistically
+ok 8 - correction transmits expected version and does not mutate the source row optimistically
+  ---
+  duration_ms: 0.187755
+  type: 'test'
+  ...
+# Subtest: full export retrieves all 1,250 filtered rows in bounded pages
+ok 9 - full export retrieves all 1,250 filtered rows in bounded pages
+  ---
+  duration_ms: 1.948991
+  type: 'test'
+  ...
+# Subtest: changed snapshot aborts export instead of returning an inconsistent file
+ok 10 - changed snapshot aborts export instead of returning an inconsistent file
+  ---
+  duration_ms: 0.596396
+  type: 'test'
+  ...
+# Subtest: oversized export must narrow filters instead of silently truncating
+ok 11 - oversized export must narrow filters instead of silently truncating
+  ---
+  duration_ms: 12.743351
+  type: 'test'
+  ...
+# Subtest: duplicate rows abort export
+ok 12 - duplicate rows abort export
+  ---
+  duration_ms: 0.241815
+  type: 'test'
+  ...
+# Subtest: empty export is explicit rather than generating a dummy data row
+ok 13 - empty export is explicit rather than generating a dummy data row
+  ---
+  duration_ms: 0.169188
+  type: 'test'
+  ...
+# Subtest: verification rejects a null acknowledgement instead of reporting success
+ok 14 - verification rejects a null acknowledgement instead of reporting success
+  ---
+  duration_ms: 0.148478
+  type: 'test'
+  ...
+# Subtest: malformed export snapshot is not treated as an empty database
+ok 15 - malformed export snapshot is not treated as an empty database
+  ---
+  duration_ms: 0.250177
+  type: 'test'
+  ...
+# Subtest: negative or fractional export counts are rejected
+ok 16 - negative or fractional export counts are rejected
+  ---
+  duration_ms: 0.281623
+  type: 'test'
+  ...
+# Subtest: public configuration validator exists
+ok 17 - public configuration validator exists
+  ---
+  duration_ms: 0.914492
+  type: 'test'
+  ...
+# Subtest: missing config is reported without a credential fallback
+ok 18 - missing config is reported without a credential fallback
+  ---
+  duration_ms: 1.168105
+  type: 'test'
+  ...
+# Subtest: frontend rejects service-role JWTs
+ok 19 - frontend rejects service-role JWTs
+  ---
+  duration_ms: 0.3339
+  type: 'test'
+  ...
+# Subtest: frontend rejects secret keys and credential-bearing URLs
+ok 20 - frontend rejects secret keys and credential-bearing URLs
+  ---
+  duration_ms: 0.195678
+  type: 'test'
+  ...
+# Subtest: plain HTTP is permitted only for a local Supabase instance
+ok 21 - plain HTTP is permitted only for a local Supabase instance
+  ---
+  duration_ms: 0.217469
+  type: 'test'
+  ...
+# Subtest: public keys are configuration values, not proof of authentication
+ok 22 - public keys are configuration values, not proof of authentication
+  ---
+  duration_ms: 0.229987
+  type: 'test'
+  ...
+# Subtest: migration uses the existing production and master tables
+ok 23 - migration uses the existing production and master tables
+  ---
+  duration_ms: 2.328239
+  type: 'test'
+  ...
+# Subtest: read and mutation contracts exist with version and scope protection
+ok 24 - read and mutation contracts exist with version and scope protection
+  ---
+  duration_ms: 1.241984
+  type: 'test'
+  ...
+# Subtest: anonymous users cannot execute internal migration helpers
+ok 25 - anonymous users cannot execute internal migration helpers
+  ---
+  duration_ms: 0.940941
+  type: 'test'
+  ...
+# Subtest: no forbidden ranking or time-series analysis remains in application sources
+ok 26 - no forbidden ranking or time-series analysis remains in application sources
+  ---
+  duration_ms: 2.704501
+  type: 'test'
+  ...
+# Subtest: profile changes and pending legacy records are guarded, not implicitly trusted
+ok 27 - profile changes and pending legacy records are guarded, not implicitly trusted
+  ---
+  duration_ms: 0.263347
+  type: 'test'
+  ...
+# Subtest: domain implementation is present
+ok 28 - domain implementation is present
+  ---
+  duration_ms: 0.68795
+  type: 'test'
+  ...
+# Subtest: progress preserves 110 percent and surplus
+ok 29 - progress preserves 110 percent and surplus
+  ---
+  duration_ms: 1.283033
+  type: 'test'
+  ...
+# Subtest: zero target has no fabricated percentage
+ok 30 - zero target has no fabricated percentage
+  ---
+  duration_ms: 0.130391
+  type: 'test'
+  ...
+# Subtest: quantity must be a positive safe integer, not silently rounded
+ok 31 - quantity must be a positive safe integer, not silently rounded
+  ---
+  duration_ms: 0.402992
+  type: 'test'
+  ...
+# Subtest: Jakarta day boundary is independent of the device timezone
+ok 32 - Jakarta day boundary is independent of the device timezone
+  ---
+  duration_ms: 13.707596
+  type: 'test'
+  ...
+# Subtest: 7 and 30 days are inclusive rolling ranges, not calendar weeks
+ok 33 - 7 and 30 days are inclusive rolling ranges, not calendar weeks
+  ---
+  duration_ms: 0.433135
+  type: 'test'
+  ...
+# Subtest: invalid calendar dates and reversed ranges fail
+ok 34 - invalid calendar dates and reversed ranges fail
+  ---
+  duration_ms: 0.31347
+  type: 'test'
+  ...
+# Subtest: exact plan keys isolate factory, shift and color
+ok 35 - exact plan keys isolate factory, shift and color
+  ---
+  duration_ms: 0.369802
+  type: 'test'
+  ...
+# Subtest: only acknowledged queue items are removed, concurrent additions survive
+ok 36 - only acknowledged queue items are removed, concurrent additions survive
+  ---
+  duration_ms: 0.392517
+  type: 'test'
+  ...
+# Subtest: an unknown or inactive role gets no elevated UI permission
+ok 37 - an unknown or inactive role gets no elevated UI permission
+  ---
+  duration_ms: 0.296705
+  type: 'test'
+  ...
+# Subtest: export text does not become an Excel formula
+ok 38 - export text does not become an Excel formula
+  ---
+  duration_ms: 0.276616
+  type: 'test'
+  ...
+# Subtest: filter search remains a literal string and limit is bounded
+ok 39 - filter search remains a literal string and limit is bounded
+  ---
+  duration_ms: 0.240543
+  type: 'test'
+  ...
+# Subtest: migration rejects unsupported pre-existing Factory models before modifying schema
+ok 40 - migration rejects unsupported pre-existing Factory models before modifying schema
+  ---
+  duration_ms: 1.79154
+  type: 'test'
+  ...
+# Subtest: pre-existing optimistic versions cannot be nullable or nonpositive
+ok 41 - pre-existing optimistic versions cannot be nullable or nonpositive
+  ---
+  duration_ms: 0.110242
+  type: 'test'
+  ...
+# Subtest: new nonlegacy production has complete canonical references enforced by constraint
+ok 42 - new nonlegacy production has complete canonical references enforced by constraint
+  ---
+  duration_ms: 0.125304
+  type: 'test'
+  ...
+# Subtest: idempotent replay still rechecks current factory authorization
+ok 43 - idempotent replay still rechecks current factory authorization
+  ---
+  duration_ms: 0.161276
+  type: 'test'
+  ...
+# Subtest: original dashboard and plan functions receive realtime data version
+ok 44 - original dashboard and plan functions receive realtime data version
+  ---
+  duration_ms: 0.323134
+  type: 'test'
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 149.400885

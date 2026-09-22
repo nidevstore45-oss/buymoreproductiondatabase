@@ -1,0 +1,194 @@
+{
+  "suite": "Actual modified React components + actual custom CSS, local React 18.2.0; representative fixture content, not live Supabase or a Vite production bundle",
+  "checks": [
+    {
+      "name": "desktop sidebar visible",
+      "pass": true
+    },
+    {
+      "name": "desktop typography 14px",
+      "pass": true
+    },
+    {
+      "name": "desktop hide sidebar",
+      "pass": true
+    },
+    {
+      "name": "workspace reclaimed",
+      "pass": true
+    },
+    {
+      "name": "hidden sidebar retains component state",
+      "pass": true
+    },
+    {
+      "name": "production subnavigation selects verification",
+      "pass": true
+    },
+    {
+      "name": "360px document has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "360px desktop sidebar hidden",
+      "pass": true
+    },
+    {
+      "name": "360px mobile drawer opens",
+      "pass": true
+    },
+    {
+      "name": "360px initial focus inside drawer",
+      "pass": true
+    },
+    {
+      "name": "360px Escape closes drawer",
+      "pass": true
+    },
+    {
+      "name": "360px focus returns to Menu",
+      "pass": true
+    },
+    {
+      "name": "360px navigation dismisses drawer",
+      "pass": true
+    },
+    {
+      "name": "360px uniform font 16px",
+      "pass": true
+    },
+    {
+      "name": "360px rows are labelled cards",
+      "pass": true
+    },
+    {
+      "name": "360px actions remain clickable",
+      "pass": true
+    },
+    {
+      "name": "360px original action handler retained",
+      "pass": true
+    },
+    {
+      "name": "390px document has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "390px desktop sidebar hidden",
+      "pass": true
+    },
+    {
+      "name": "390px mobile drawer opens",
+      "pass": true
+    },
+    {
+      "name": "390px initial focus inside drawer",
+      "pass": true
+    },
+    {
+      "name": "390px Escape closes drawer",
+      "pass": true
+    },
+    {
+      "name": "390px focus returns to Menu",
+      "pass": true
+    },
+    {
+      "name": "390px navigation dismisses drawer",
+      "pass": true
+    },
+    {
+      "name": "390px uniform font 16px",
+      "pass": true
+    },
+    {
+      "name": "390px rows are labelled cards",
+      "pass": true
+    },
+    {
+      "name": "390px actions remain clickable",
+      "pass": true
+    },
+    {
+      "name": "390px original action handler retained",
+      "pass": true
+    },
+    {
+      "name": "768px document has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "768px desktop sidebar hidden",
+      "pass": true
+    },
+    {
+      "name": "768px mobile drawer opens",
+      "pass": true
+    },
+    {
+      "name": "768px initial focus inside drawer",
+      "pass": true
+    },
+    {
+      "name": "768px Escape closes drawer",
+      "pass": true
+    },
+    {
+      "name": "768px focus returns to Menu",
+      "pass": true
+    },
+    {
+      "name": "768px navigation dismisses drawer",
+      "pass": true
+    },
+    {
+      "name": "labels align after toggling a column",
+      "pass": true
+    },
+    {
+      "name": "native drawer traps keyboard focus",
+      "pass": true
+    },
+    {
+      "name": "existing explicit field ID keeps clickable label",
+      "pass": true
+    },
+    {
+      "name": "generated field ID keeps clickable label",
+      "pass": true
+    },
+    {
+      "name": "existing shared modal renders with accessible name",
+      "pass": true
+    },
+    {
+      "name": "modal locks background scrolling",
+      "pass": true
+    },
+    {
+      "name": "shared modal keeps Shift+Tab inside",
+      "pass": true
+    },
+    {
+      "name": "shared modal Escape dismisses",
+      "pass": true
+    },
+    {
+      "name": "shared modal restores focus to its trigger",
+      "pass": true
+    },
+    {
+      "name": "shared modal releases background scrolling",
+      "pass": true
+    },
+    {
+      "name": "320px component layout has no horizontal overflow",
+      "pass": true
+    }
+  ],
+  "page_errors": [],
+  "limitations": [
+    "HTTP navigation blocked by environment policy; used inline offline component fixture. Native sessionStorage reload persistence not tested here. Unit tests cover storage interface. Full Vite/Tailwind 3 bundle not tested."
+  ],
+  "pass": true
+}

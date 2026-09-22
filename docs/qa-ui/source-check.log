@@ -1,0 +1,8 @@
+
+> buymore-production@1.2.0 check:source
+> node scripts/check-source.cjs
+
+16 TypeScript/TSX/JavaScript source files parsed; local static imports inspected.
+25 unique workflow routine definitions; 13 referenced names found in SQL. This is NOT PostgreSQL syntax/execution validation.
+Existing shared component names retained; authorized UI revision uses AppShell and ResponsiveTable. Historical text hashes are not a current design requirement.
+Structural source checks: PASS

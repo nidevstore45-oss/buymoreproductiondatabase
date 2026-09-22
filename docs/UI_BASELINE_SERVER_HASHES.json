@@ -1,0 +1,9 @@
+{
+  "src/api-core.ts": "463e80303a9e30ad6a5887b548a1fbdfdd4d368c46baa0433a2d9a2927e491d8",
+  "supabase/config.toml": "7a905e7e13e52e09640d2bfbc276c0dbe179631fdf0d3826c7d8a18238856168",
+  "supabase/functions/manage-users/index.ts": "b2e88347fdc1aa1048f170fa2c29738c2e75a1764f888ed6b6fe80c09d43c851",
+  "supabase/migrations/20260921000100_production_workflow.sql": "44c0e0a6d92da9058f48a1f5db6c602dbb5f4e0ea62b09dec50eaa6c456e3a6a",
+  "supabase/preflight.sql": "1120342698d4eac58b4476c31a234396cc62c2f0b31bea0dadb95955b7786ca0",
+  "supabase/tests/01_catalog.sql": "23f990bd114c34ee56428d0af78e2a24460173f57ac900ba5cb4b0ab989f3679",
+  "supabase/tests/02_workflow.psql": "0c0189053b9e405919d6824e0e3eacc737e5d0e2d54d33753b64072fa1267182"
+}
