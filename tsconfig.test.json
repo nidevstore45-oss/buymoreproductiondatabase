@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Node",
+    "strict": true,
+    "outDir": ".test-build",
+    "rootDir": "src",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/domain.ts",
+    "src/api-core.ts",
+    "src/config-validation.ts",
+    "src/page-cache.ts"
+  ]
+}

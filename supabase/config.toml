@@ -1,0 +1,5 @@
+project_id = "production-buymore"
+
+[functions.manage-users]
+# The function validates the caller using Supabase Auth getUser and a database admin/MFA check.
+verify_jwt = false

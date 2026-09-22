@@ -1,0 +1,133 @@
+-- ACTUAL DATABASE regression, rollback-only, for a dedicated Supabase STAGING clone.
+-- Not executed in the artifact-generation environment. No application seed/mock database.
+-- Supply four DISTINCT, existing Auth/profile IDs belonging to dedicated staging test users.
+-- psql uses database JWT claims to exercise real RLS; this is NOT an Auth login/JWT-signature test.
+\set ON_ERROR_STOP on
+\if :{?STAGING_CONFIRMED}
+\else
+  \echo 'STOP: STAGING_CONFIRMED=YES is required.'
+  \quit 3
+\endif
+SELECT :'STAGING_CONFIRMED' = 'YES' AS confirmed \gset
+\if :confirmed
+\else
+  \echo 'STOP: use a dedicated staging clone only.'
+  \quit 3
+\endif
+\if :{?ADMIN_ID}
+\else
+  \echo 'ADMIN_ID is required.'
+  \quit 3
+\endif
+\if :{?SUPERVISOR_ID}
+\else
+  \echo 'SUPERVISOR_ID is required.'
+  \quit 3
+\endif
+\if :{?OPERATOR_ID}
+\else
+  \echo 'OPERATOR_ID is required.'
+  \quit 3
+\endif
+\if :{?OTHER_OPERATOR_ID}
+\else
+  \echo 'OTHER_OPERATOR_ID is required.'
+  \quit 3
+\endif
+BEGIN;
+SET LOCAL lock_timeout='5s';
+SET LOCAL statement_timeout='120s';
+SELECT set_config('buymore_test.admin',:'ADMIN_ID',true),set_config('buymore_test.supervisor',:'SUPERVISOR_ID',true),
+  set_config('buymore_test.operator',:'OPERATOR_ID',true),set_config('buymore_test.other',:'OTHER_OPERATOR_ID',true),
+  set_config('request.jwt.claims','{}',true);
+DO $users$
+DECLARE ids uuid[]:=ARRAY[current_setting('buymore_test.admin')::uuid,current_setting('buymore_test.supervisor')::uuid,current_setting('buymore_test.operator')::uuid,current_setting('buymore_test.other')::uuid];
+BEGIN
+  IF (SELECT count(DISTINCT x) FROM unnest(ids) x)<>4 THEN RAISE EXCEPTION 'Use four distinct dedicated staging users'; END IF;
+  IF (SELECT count(*) FROM public.profiles WHERE id=ANY(ids))<>4 OR (SELECT count(*) FROM auth.users WHERE id=ANY(ids))<>4 THEN RAISE EXCEPTION 'All staging IDs must already exist in Auth and profiles'; END IF;
+  UPDATE public.profiles SET role=CASE WHEN id=ids[1] THEN 'admin' WHEN id=ids[2] THEN 'supervisor' ELSE 'operator' END,is_active=true WHERE id=ANY(ids);
+END $users$;
+CREATE TEMP TABLE buymore_test_state(key text PRIMARY KEY,value jsonb) ON COMMIT DROP;
+GRANT SELECT,INSERT,UPDATE ON buymore_test_state TO authenticated;
+INSERT INTO buymore_test_state VALUES('prefix',to_jsonb('QA_'||upper(replace(gen_random_uuid()::text,'-',''))));
+CREATE FUNCTION pg_temp.check_true(value boolean,message text) RETURNS void LANGUAGE plpgsql AS $fn$
+BEGIN IF value IS DISTINCT FROM true THEN RAISE EXCEPTION 'FAIL: %',message; END IF; RAISE NOTICE 'PASS: %',message; END $fn$;
+CREATE FUNCTION pg_temp.expect_error(command text,pattern text,label text) RETURNS void LANGUAGE plpgsql AS $fn$
+DECLARE caught text;
+BEGIN
+  BEGIN EXECUTE command; EXCEPTION WHEN OTHERS THEN caught:=SQLERRM; END;
+  IF caught IS NULL OR caught !~* pattern THEN RAISE EXCEPTION 'FAIL: %, expected %, received %',label,pattern,coalesce(caught,'NO ERROR'); END IF;
+  RAISE NOTICE 'PASS: %',label;
+END $fn$;
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('buymore_test.admin'),'role','authenticated','aal','aal2')::text,true);
+DO $masters$
+DECLARE prefix text:=(SELECT value#>>'{}' FROM pg_temp.buymore_test_state WHERE key='prefix'); c text;
+BEGIN
+  FOREACH c IN ARRAY ARRAY['F1','F2','P','C','S'] LOOP
+    PERFORM public.buymore_save_master(jsonb_build_object('category',CASE WHEN c IN ('F1','F2') THEN 'FACTORY' WHEN c='P' THEN 'PRODUCT' WHEN c='C' THEN 'COLOR' ELSE 'SHIFT' END,
+      'code',prefix||'_'||c,'name',prefix||'_'||c,'is_active',true,'metadata','{}'::jsonb));
+  END LOOP;
+  PERFORM public.buymore_set_user_access(current_setting('buymore_test.supervisor')::uuid,'supervisor',true,ARRAY[prefix||'_F1'],'Isolated staging regression');
+  PERFORM public.buymore_set_user_access(current_setting('buymore_test.operator')::uuid,'operator',true,ARRAY[prefix||'_F1'],'Isolated staging regression');
+  PERFORM public.buymore_set_user_access(current_setting('buymore_test.other')::uuid,'operator',true,ARRAY[prefix||'_F2'],'Isolated staging regression');
+  INSERT INTO pg_temp.buymore_test_state VALUES('filters',jsonb_build_object('factory_code',prefix||'_F1','start_date','2026-09-21','end_date','2026-09-21'));
+  INSERT INTO pg_temp.buymore_test_state VALUES('payload',jsonb_build_object('date','2026-09-21','factory_code',prefix||'_F1','product',prefix||'_P','color',prefix||'_C','shift',prefix||'_S','quantity',550,'note','Rollback-only staging test','client_request_id',gen_random_uuid()));
+  PERFORM pg_temp.check_true(public.buymore_role()='admin','admin identity comes from protected profiles');
+END $masters$;
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('buymore_test.operator'),'role','authenticated','aal','aal1')::text,true);
+DO $submit$
+DECLARE payload jsonb:=(SELECT value FROM pg_temp.buymore_test_state WHERE key='payload'); result jsonb; replay jsonb; prefix text:=(SELECT value#>>'{}' FROM pg_temp.buymore_test_state WHERE key='prefix');
+BEGIN
+  result:=public.buymore_save_production(payload);
+  PERFORM pg_temp.check_true(result->>'saved'='true' AND result->'record'->>'verification_status'='SUBMITTED','operator input is saved as SUBMITTED');
+  PERFORM pg_temp.check_true(result->'record'->>'created_by_id'=current_setting('buymore_test.operator'),'server attributes production to the authenticated operator');
+  INSERT INTO pg_temp.buymore_test_state VALUES('record',result->'record');
+  replay:=public.buymore_save_production(payload);
+  PERFORM pg_temp.check_true(replay->>'replayed'='true' AND replay->'record'->>'id'=result->'record'->>'id','same request is acknowledged without another transaction');
+  PERFORM pg_temp.expect_error(format('SELECT public.buymore_save_production(%L::jsonb)',payload||jsonb_build_object('quantity',551)),'IDEMPOTENCY_CONFLICT','different payload cannot reuse a request ID');
+  PERFORM pg_temp.expect_error(format('SELECT public.buymore_save_production(%L::jsonb)',payload||jsonb_build_object('factory_code',prefix||'_F2','client_request_id',gen_random_uuid())),'FACTORY_FORBIDDEN','operator cannot submit to another Factory');
+  PERFORM pg_temp.expect_error(format('SELECT public.buymore_review_production(%L,%s,''VERIFIED'','''')',result->'record'->>'id',result->'record'->>'version'),'ROLE_NOT_ALLOWED','operator cannot verify');
+  PERFORM pg_temp.expect_error(format('UPDATE public.production_data SET quantity=999 WHERE id::text=%L',result->'record'->>'id'),'permission denied|MUTATION_RPC_REQUIRED','direct production update is denied');
+  PERFORM pg_temp.expect_error(format('UPDATE public.profiles SET role=''admin'' WHERE id=%L::uuid',current_setting('buymore_test.operator')),'permission denied|ROLE_NOT_ALLOWED','operator cannot promote own profile');
+END $submit$;
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('buymore_test.supervisor'),'role','authenticated','aal','aal2')::text,true);
+DO $review_plan$
+DECLARE row_json jsonb:=(SELECT value FROM pg_temp.buymore_test_state WHERE key='record'); payload jsonb:=(SELECT value FROM pg_temp.buymore_test_state WHERE key='payload'); filters jsonb:=(SELECT value FROM pg_temp.buymore_test_state WHERE key='filters'); plan_payload jsonb; summary jsonb;
+BEGIN
+  PERFORM pg_temp.expect_error(format('SELECT public.buymore_review_production(%L,%s,''REJECTED'','' '')',row_json->>'id',row_json->>'version'),'ALASAN','rejection requires a reason');
+  row_json:=public.buymore_review_production(row_json->>'id',(row_json->>'version')::integer,'VERIFIED','Staging verification');
+  UPDATE pg_temp.buymore_test_state SET value=row_json WHERE key='record';
+  plan_payload:=payload||jsonb_build_object('target_date','2026-09-21','target_quantity',500);
+  PERFORM public.buymore_save_plan(plan_payload);
+  summary:=public.buymore_plan_page(filters,0,50);
+  PERFORM pg_temp.check_true((summary->>'target')::numeric=500 AND (summary->>'actual')::numeric=550,'plan matches verified production on all five dimensions');
+  PERFORM pg_temp.check_true((summary->'rows'->0->>'progress')::numeric=110,'progress is 110%, not clamped');
+  PERFORM pg_temp.check_true((summary->'by_day'->0->>'actual')::numeric=550 AND (summary->'by_shift'->0->>'target')::numeric=500,'daily and shift summaries use the same plan');
+  PERFORM pg_temp.expect_error(format('SELECT public.buymore_save_plan(%L::jsonb)',plan_payload),'duplicate key','overlapping exact plan is refused');
+  PERFORM pg_temp.expect_error(format('SELECT public.buymore_set_user_access(%L::uuid,''admin'',true,ARRAY[]::text[],''No permission'')',current_setting('buymore_test.supervisor')),'ROLE_NOT_ALLOWED','supervisor cannot manage admin roles');
+END $review_plan$;
+DO $correction$
+DECLARE row_json jsonb:=(SELECT value FROM pg_temp.buymore_test_state WHERE key='record'); payload jsonb:=(SELECT value FROM pg_temp.buymore_test_state WHERE key='payload'); filters jsonb:=(SELECT value FROM pg_temp.buymore_test_state WHERE key='filters'); prior_version integer:=(row_json->>'version')::integer; summary jsonb;
+BEGIN
+  row_json:=public.buymore_correct_production(row_json->>'id',prior_version,payload||jsonb_build_object('quantity',600),'Staging quantity correction');
+  PERFORM pg_temp.check_true(row_json->>'verification_status'='SUBMITTED' AND row_json->>'quantity'='600','correction updates quantity and requires reverification');
+  summary:=public.buymore_plan_page(filters,0,50);
+  PERFORM pg_temp.check_true((summary->>'actual')::numeric=0,'unverified correction is excluded from plan actual');
+  PERFORM pg_temp.expect_error(format('SELECT public.buymore_correct_production(%L,%s,%L::jsonb,''Stale write'')',row_json->>'id',prior_version,payload),'VERSION_CONFLICT','stale supervisor write is rejected');
+  row_json:=public.buymore_review_production(row_json->>'id',(row_json->>'version')::integer,'VERIFIED','Staging reverification');
+  summary:=public.buymore_dashboard(filters);
+  PERFORM pg_temp.check_true((summary->'plans'->>'actual')::numeric=600 AND (summary->>'verified')::numeric=600,'dashboard reflects corrected verified actual');
+  PERFORM pg_temp.check_true(EXISTS(SELECT 1 FROM public.activity_logs WHERE table_name='production_data' AND record_id=row_json->>'id' AND metadata->>'event_subtype'='CORRECT' AND metadata->'old_data'->>'quantity'='550' AND metadata->'new_data'->>'quantity'='600'),'correction audit preserves old/new data and scope');
+  PERFORM pg_temp.expect_error('UPDATE public.activity_logs SET description=''tampered''','permission denied|AUDIT_IMMUTABLE','audit log cannot be altered by application users');
+  UPDATE pg_temp.buymore_test_state SET value=row_json WHERE key='record';
+END $correction$;
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('buymore_test.other'),'role','authenticated','aal','aal1')::text,true);
+SELECT pg_temp.check_true((public.buymore_production_page((SELECT value FROM pg_temp.buymore_test_state WHERE key='filters'),0,50)->>'count')::integer=0,'another Factory operator cannot read the transaction');
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('buymore_test.admin'),'role','authenticated','aal','aal2')::text,true);
+SELECT public.buymore_set_user_access(current_setting('buymore_test.operator')::uuid,'operator',false,ARRAY[]::text[],'Staging inactive-user test');
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('buymore_test.operator'),'role','authenticated','aal','aal1')::text,true);
+SELECT pg_temp.expect_error(format('SELECT public.buymore_save_production(%L::jsonb)',(SELECT value FROM pg_temp.buymore_test_state WHERE key='payload')),'ROLE_NOT_ALLOWED','inactive user cannot replay or submit');
+RESET ROLE;
+ROLLBACK;
+\echo 'PASS: workflow regression completed and all test writes rolled back. Auth/UI/browser E2E still require separate testing.'
