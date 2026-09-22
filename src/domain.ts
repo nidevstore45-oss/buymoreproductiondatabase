@@ -113,3 +113,46 @@ export function resolveMasterCode(items: ReadonlyArray<{category:string;code:str
   if(names.length!==1)throw new Error(`Master ${category} tidak ditemukan atau ambigu. Pilih master aktif.`);
   return names[0].code;
 }
+
+/** Menu capabilities only. Supabase/RLS remains authoritative for data access. */
+export interface RoleMenuAccess {
+  inputOnly: boolean;
+  canInputProduction: boolean;
+  canReadProduction: boolean;
+  canViewSecurity: boolean;
+  canReadLogs: boolean;
+}
+export function getRoleMenuAccess(profile?: AccessProfile | null): RoleMenuAccess {
+  const active = profile?.is_active === true;
+  const manager = active && (profile?.role === 'admin' || profile?.role === 'supervisor');
+  const operator = active && profile?.role === 'operator';
+  return {
+    inputOnly: operator,
+    canInputProduction: manager || operator,
+    canReadProduction: manager,
+    canViewSecurity: manager,
+    canReadLogs: manager,
+  };
+}
+
+/**
+ * Resolve cached navigation before rendering or fetching any page data.
+ * Stored preferences never grant access. An active Operator always opens input.
+ */
+export function resolveRoleNavigation(
+  profile: AccessProfile | null | undefined,
+  requestedPage: string,
+  requestedMode: string,
+): { page: string; mode: string } {
+  const access = getRoleMenuAccess(profile);
+  if (!access.canInputProduction) return { page: '', mode: 'input' };
+  if (access.inputOnly) return { page: 'production', mode: 'input' };
+  const allowedPages = ['production', 'dashboard', 'plan', 'analytics', 'factory', 'logs', 'security'];
+  if (profile?.role === 'admin') allowedPages.push('users', 'settings');
+  return {
+    page: allowedPages.includes(requestedPage) ? requestedPage : 'production',
+    mode: ['input', 'data', 'verification', 'correction'].includes(requestedMode)
+      ? requestedMode
+      : 'input',
+  };
+}
